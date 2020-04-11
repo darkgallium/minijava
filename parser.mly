@@ -65,8 +65,6 @@ metho:
    lf = separated_list(COMMA, pair(typ, IDENT))
    RPAREN
    LBRACE
-   /*lvd = list(var_declaration)
-   i = instruction*/
    ds = declarations_and_statements
    RETURN e = expression SEMICOLON
    RBRACE
@@ -74,18 +72,22 @@ metho:
       let d, s = fst ds, snd ds in
       { formals = swap lf; result = typ1 ; locals = d ; body = IBlock(s) ; return = e }
    }
+
 /*| PUBLIC typ1 = typ id = IDENT LPAREN
    RPAREN LBRACE lvd = list(var_declaration)
    i = instruction RETURN e = expression SEMICOLON RBRACE
    { { formals = []; result = typ1 ; locals = swap lvd ; body = i ; return = e } }*/
 
 
+// retour : ( liste de tuples représentant les variables format (ident, type), liste d'instructions)
 declarations_and_statements:
+// variable declaration : type + ident + semicolon
 | t = typ id = IDENT SEMICOLON r = declarations_and_statements
    {
      let d, s = r in
      ((id, t) :: d, s)
    }
+// statements
 | s = list(instruction)
    { ([], s) }
 
