@@ -29,7 +29,7 @@ rule get_token = parse
   | "-" { MINUS }
   | "*" { TIMES }
   | "<" { LT }
-  | "&&" { AND }
+  | "&" { AND }
   | integer as i
       {
         try

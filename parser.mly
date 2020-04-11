@@ -120,7 +120,7 @@ raw_expression:
    { EConst (i) }
 | bool = BOOL_CONST
    { EConst(ConstBool bool) }
-| t = THIS
+| THIS
    { EThis }
 | id1 = IDENT
    { EGetVar id1 }
@@ -131,17 +131,17 @@ raw_expression:
 | NOT e = expression
    { EUnOp(UOpNot, e) }
 | e1 = expression AND AND e2 = expression
-   { EBinOp(OpAnd, e1,e2) }
+   { EBinOp(OpAnd, e1, e2) }
 | e1 = expression LT e2 = expression
-   { EBinOp(OpLt, e1,e2) }
+   { EBinOp(OpLt, e1, e2) }
 | e1 = expression PLUS e2 = expression
-   { EBinOp(OpAdd, e1,e2) }
+   { EBinOp(OpAdd, e1, e2) }
 | e1 = expression MINUS e2 = expression
-   { EBinOp(OpSub, e1,e2) }
+   { EBinOp(OpSub, e1, e2) }
 | e1 = expression TIMES e2 = expression
-   { EBinOp(OpMul, e1,e2) }
+   { EBinOp(OpMul, e1, e2) }
 | e1 = expression LBRACKET e2 = expression RBRACKET
-   { EArrayGet(e1,e2) }
+   { EArrayGet(e1, e2) }
 | e = expression DOT LENGTH
    { EArrayLength(e) }
 | e = expression DOT id = IDENT LPAREN sl = separated_list(COMMA, expression) RPAREN
@@ -154,9 +154,11 @@ instruction:
    { IBlock l }
 | IF LPAREN e = expression RPAREN i1 = instruction
    ELSE i2 = instruction
-   { IIf (e,i1,i2) }
+   { IIf (e, i1, i2) }
+| IF LPAREN e = expression RPAREN i = instruction
+   { IIfNoElse (e, i) }
 | WHILE LPAREN e = expression RPAREN i = instruction
-   { IWhile (e,i) }
+   { IWhile (e, i) }
 | id = IDENT LBRACKET e1 = expression RBRACKET ASSIGN e2 = expression SEMICOLON
    { IArraySet (id, e1, e2) }
 | id = IDENT ASSIGN e = expression SEMICOLON

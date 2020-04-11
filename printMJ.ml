@@ -13,6 +13,7 @@ let binop = function
   | OpMul -> "*"
   | OpLt  -> "<"
   | OpAnd -> "&&"
+  | OpEquals -> "=="
 
 let rec expr0 () = function
   | EConst c -> sprintf "%a" constant c
@@ -61,6 +62,10 @@ let rec instr () = function
         instr i1
         nl
         instr i2
+  | IIfNoElse (c, i1) ->
+      sprintf "if (%a) %a"
+        expr c
+        instr i1
   | IWhile (c, i) ->
       sprintf "while (%a) %a"
         expr c

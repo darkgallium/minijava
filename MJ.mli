@@ -22,12 +22,14 @@ and binop = LMJ.binop =
 | OpMul
 | OpLt
 | OpAnd
+| OpEquals
 
 and unop = LMJ.unop = UOpNot
 
 and instruction =
 | IBlock of instruction list
 | IIf of expression * instruction * instruction
+| IIfNoElse of expression * instruction
 | IWhile of expression * instruction
 | ISyso of expression
 | ISetVar of identifier * expression
