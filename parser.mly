@@ -3,7 +3,6 @@
   let swap = List.map ( fun (e1, e2) -> (e2, e1) )
 %}
 
-%nonassoc IFNOELSE
 
 %token <int32> INT_CONST
 %token <bool> BOOL_CONST
@@ -18,6 +17,9 @@
 %token SYSO
 %token IF ELSE WHILE
 %token EOF
+
+%nonassoc IFNOELSE
+%nonassoc ELSE
 
 %nonassoc LT
 %left PLUS MINUS
