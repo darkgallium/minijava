@@ -1,6 +1,6 @@
 class Dumb {
     public static void main(String[] args) {
-	if (true && true) {
+	if (true == true) {
     	    System.out.println(42);
 	}
     }

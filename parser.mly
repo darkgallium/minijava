@@ -3,6 +3,8 @@
   let swap = List.map ( fun (e1, e2) -> (e2, e1) )
 %}
 
+%nonassoc IFNOELSE
+
 %token <int32> INT_CONST
 %token <bool> BOOL_CONST
 %token INTEGER BOOLEAN
@@ -155,7 +157,7 @@ instruction:
 | IF LPAREN e = expression RPAREN i1 = instruction
    ELSE i2 = instruction
    { IIf (e, i1, i2) }
-| IF LPAREN e = expression RPAREN i = instruction
+| IF LPAREN e = expression RPAREN i = instruction %prec IFNOELSE
    { IIfNoElse (e, i) }
 | WHILE LPAREN e = expression RPAREN i = instruction
    { IWhile (e, i) }
