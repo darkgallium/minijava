@@ -1,9 +1,7 @@
 class Dumb {
     public static void main(String[] args) {
-	if (true) {
+	if (1 == 1) {
     	    System.out.println(42);
-	} else {
-	    
 	}
     }
 }

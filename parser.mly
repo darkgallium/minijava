@@ -17,11 +17,12 @@
 %token SYSO
 %token IF ELSE WHILE
 %token EOF
+%token EQUALS
 
 %nonassoc IFNOELSE
 %nonassoc ELSE
 
-%nonassoc LT
+%nonassoc LT EQUALS
 %left PLUS MINUS
 %left TIMES AND
 %left NOT
@@ -136,6 +137,8 @@ raw_expression:
    { EUnOp(UOpNot, e) }
 | e1 = expression AND AND e2 = expression
    { EBinOp(OpAnd, e1, e2) }
+| e1 = expression EQUALS e2 = expression
+   { EBinOp(OpEquals, e1, e2) }
 | e1 = expression LT e2 = expression
    { EBinOp(OpLt, e1, e2) }
 | e1 = expression PLUS e2 = expression
