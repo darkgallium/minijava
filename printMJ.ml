@@ -46,7 +46,7 @@ and expr5 () = function
   | e -> expr4 () e
 
 and expr6 () = function
-  | EBinOp ((OpLt | OpAnd) as op, e1, e2) -> sprintf "%a %s %a" expr6 e1 (binop op) expr6 e2
+  | EBinOp ((OpLt | OpAnd | OpEquals) as op, e1, e2) -> sprintf "%a %s %a" expr6 e1 (binop op) expr6 e2
   | e -> expr5 () e
 
 and expr () e = expr6 () e

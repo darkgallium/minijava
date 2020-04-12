@@ -47,8 +47,8 @@ rule get_token = parse
   | "return" { RETURN }
   | "," { COMMA }
   | ";" { SEMICOLON }
-  | "==" { EQUALS }
   | "=" { ASSIGN }
+  | "==" { EQUALS }
   | "(" { LPAREN }
   | ")" { RPAREN }
   | "[" { LBRACKET }
