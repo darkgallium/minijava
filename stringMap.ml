@@ -1,5 +1,5 @@
 include Map.Make(String)
-
+open Printf
 let addm m1 m2 =
   fold add m1 m2
 

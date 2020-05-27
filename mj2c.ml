@@ -8,9 +8,16 @@ let typ2c () = function
     | Typ id -> sprintf "struct %s" id
     | _ -> sprintf "###"
 
+let classattr2c () (name, typ) =
+  sprintf "%s %s" (typ2c () typ) name
+
+let classdef2c () (name, c) = 
+  Printf.printf "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa %s" name ;
+  sprintf "struct %s {%s};" name (termlist semicolon classattr2c () (StringMap.to_association_list c.attributes))
+
 let constant2c () = function
-    | ConstBool true -> sprintf "TRUE"
-    | ConstBool false -> sprintf "FALSE"
+    | ConstBool true -> sprintf "0"
+    | ConstBool false -> sprintf "1"
     | ConstInt i -> sprintf "%ld" i
 
 let binop2c = function
@@ -80,9 +87,10 @@ let rec instr2c () = function
 let program2c (p : MJ.program) : unit =
   Printf.fprintf stdout "#include <stdio.h>\n\
 #include <stdlib.h>\n\
-#define TRUE 1
-#define FALSE 0
+// class semicolon
 
 int main(int argc, char *argv[]) {
 %s
-}\n" (instr2c () p.main)
+}\n"
+(*seplist nl classdef2c () (StringMap.to_association_list p.defs))*)
+(instr2c () p.main)
