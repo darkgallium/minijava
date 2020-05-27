@@ -11,9 +11,8 @@ let typ2c () = function
 let classattr2c () (name, typ) =
   sprintf "%s %s" (typ2c () typ) name
 
-let classdef2c () (name, c) = 
-  Printf.printf "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa %s" name ;
-  sprintf "struct %s {%s};" name (termlist semicolon classattr2c () (StringMap.to_association_list c.attributes))
+let classdef2c () (name, c) =
+  sprintf "struct %s {%s};" name ((termlist semicolon classattr2c) () (StringMap.to_association_list c.attributes))
 
 let constant2c () = function
     | ConstBool true -> sprintf "0"
@@ -81,16 +80,22 @@ let rec instr2c () = function
   sprintf "while (%a) %a"
     expr2c c
     instr2c i
+| IFor (e1, e2 , e3, i) ->
+    sprintf "for (%a;%a;%a) %a"
+      instr2c e1
+      expr2c e2
+      instr2c e3
+      instr2c i
 | IBlock is -> sprintf "{%a%t}" (seplist nl instr2c) is nl
 | ISyso e -> sprintf "printf(%a);printf(\"\\n\");" expr2c e
+| IIncrement i -> sprintf "%s++;" i
 
 let program2c (p : MJ.program) : unit =
   Printf.fprintf stdout "#include <stdio.h>\n\
 #include <stdlib.h>\n\
-// class semicolon
-
+%s
 int main(int argc, char *argv[]) {
 %s
 }\n"
-(*seplist nl classdef2c () (StringMap.to_association_list p.defs))*)
+(seplist nl classdef2c () (StringMap.to_association_list p.defs))
 (instr2c () p.main)

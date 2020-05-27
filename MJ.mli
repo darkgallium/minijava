@@ -31,9 +31,11 @@ and instruction =
 | IIf of expression * instruction * instruction
 | IIfNoElse of expression * instruction
 | IWhile of expression * instruction
+| IFor of instruction * expression * instruction * instruction
 | ISyso of expression
 | ISetVar of identifier * expression
 | IArraySet of identifier * expression * expression
+| IIncrement of identifier
 
 and typ =
 | TypInt

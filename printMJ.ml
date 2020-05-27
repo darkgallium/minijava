@@ -53,6 +53,12 @@ and expr () e = expr6 () e
 
 let indentation = 2
 
+let rec for_instr () = function
+  | ISetVar (x, e) -> sprintf "%s = %a" x expr e
+  | IArraySet (id, ei, ev) -> sprintf "%s[%a] = %a" id expr ei expr ev
+  | IIncrement i -> sprintf "%s++" i
+  | _ -> ""
+
 let rec instr () = function
   | ISetVar (x, e) -> sprintf "%s = %a;" x expr e
   | IArraySet (id, ei, ev) -> sprintf "%s[%a] = %a;" id expr ei expr ev
@@ -70,8 +76,15 @@ let rec instr () = function
       sprintf "while (%a) %a"
         expr c
         instr i
+  | IFor (e1, e2 , e3, i) ->
+      sprintf "for (%a; %a; %a) %a"
+        for_instr e1
+        expr e2
+        for_instr e3
+        instr i
   | IBlock is -> sprintf "{%a%t}" (indent indentation (seplist nl instr)) is nl
   | ISyso e -> sprintf "System.out.println(%a);" expr e
+  | IIncrement i -> sprintf "%s++;" i
 
 let typ () = function
   | TypInt -> "int"

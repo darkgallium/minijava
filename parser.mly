@@ -16,7 +16,7 @@
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE
 %token THIS NEW DOT LENGTH
 %token SYSO
-%token IF ELSE WHILE
+%token IF ELSE WHILE FOR
 %token EOF
 %token EQUALS
 
@@ -63,8 +63,7 @@ defs:
 
 clas:
 | CLASS id1 = IDENT id2 = option(preceded(EXTENDS, IDENT)) LBRACE lvd = list(var_declaration) lmd = list(metho) RBRACE
-   { let m = lmd in id1,
-   { extends = id2 ; attributes = swap lvd ; methods = lmd } }
+   { id1, { extends = id2 ; attributes = swap lvd ; methods = lmd } }
 
 metho:
 | PUBLIC typ1 = typ id1 = IDENT
@@ -79,11 +78,6 @@ metho:
       let d, s = fst ds, snd ds in
       id1, { formals = swap lf; result = typ1 ; locals = d ; body = IBlock(s) ; return = e }
    }
-
-/*| PUBLIC typ1 = typ id = IDENT LPAREN
-   RPAREN LBRACE lvd = list(var_declaration)
-   i = instruction RETURN e = expression SEMICOLON RBRACE
-   { { formals = []; result = typ1 ; locals = swap lvd ; body = i ; return = e } }*/
 
 
 // retour : ( liste de tuples représentant les variables format (ident, type), liste d'instructions)
@@ -156,6 +150,14 @@ raw_expression:
 | e = expression DOT id = IDENT LPAREN sl = separated_list(COMMA, expression) RPAREN
    { EMethodCall(e, id, sl) }
 
+for_instruction:
+| id = IDENT LBRACKET e1 = expression RBRACKET ASSIGN e2 = expression
+   { IArraySet (id, e1, e2) }
+| id = IDENT ASSIGN e = expression
+   { ISetVar (id, e) }
+| id = IDENT PLUS PLUS
+ { IIncrement(id) }
+
 instruction:
 | SYSO LPAREN e = expression RPAREN SEMICOLON
    { ISyso e }
@@ -168,7 +170,11 @@ instruction:
    { IIfNoElse (e, i) }
 | WHILE LPAREN e = expression RPAREN i = instruction
    { IWhile (e, i) }
+| FOR LPAREN e1 = for_instruction SEMICOLON e2 = expression SEMICOLON e3 = for_instruction RPAREN i = instruction
+  { IFor (e1, e2, e3, i) }
 | id = IDENT LBRACKET e1 = expression RBRACKET ASSIGN e2 = expression SEMICOLON
    { IArraySet (id, e1, e2) }
 | id = IDENT ASSIGN e = expression SEMICOLON
    { ISetVar (id, e) }
+| id = IDENT PLUS PLUS SEMICOLON
+  { IIncrement(id) }
