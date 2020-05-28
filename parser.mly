@@ -38,11 +38,12 @@
 program:
 | m = main_class d = defs EOF
    {
-     let c, a, i = m in
+     let c, a, i, s = m in
      {
        name = c;
        defs = d;
        main_args = a;
+       main_locals = s;
        main = i
      }
    }
@@ -52,10 +53,13 @@ main_class:
    LBRACE
    PUBLIC STATIC VOID MAIN LPAREN STRING LBRACKET RBRACKET a = IDENT RPAREN
    LBRACE
-   i = instruction
+   ds = declarations_and_statements
    RBRACE
    RBRACE
-   { (c, a, i) }
+   {
+     let d, s = fst ds, snd ds in
+      (c, a, IBlock(s), d)
+  }
 
 defs:
 | c = list(clas)

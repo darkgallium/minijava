@@ -58,5 +58,6 @@ let translate_program p =
     MJ.name = Location.content p.LMJ.name;
     MJ.defs = translate_bindings translate_clas p.LMJ.defs;
     MJ.main = translate_instruction p.LMJ.main;
-    MJ.main_args = Location.content p.LMJ.main_args
+    MJ.main_args = Location.content p.LMJ.main_args;
+    MJ.main_locals  = List.map (translate_binding translate_typ) p.LMJ.main_locals;
   }

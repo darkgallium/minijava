@@ -75,6 +75,8 @@ and program = {
 
   main_args: string;
 
+  main_locals: (identifier * typ) list;
+
   main: instruction
 
 }

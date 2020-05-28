@@ -1,7 +1,7 @@
 class Dumb {
     public static void main(String[] args) {
-	if (1 == 1) {
-    	    System.out.println(42);
-	}
+      int i;
+      i = 65;
+      System.out.println(i);
     }
 }

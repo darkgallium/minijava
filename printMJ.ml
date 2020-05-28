@@ -117,7 +117,11 @@ let print_program p =
     (
       sprintf "class %s {%a%t}%t%a"
         p.name
-        (indent indentation (fun () -> sprintf "public static void main(String[] %s) {%a%t}" p.main_args (indent indentation instr) p.main)) nl
+        (indent indentation (fun () -> sprintf "public static void main(String[] %s) {%a%a%t}"
+          p.main_args
+          (termlist semicolon (indent indentation binding)) p.main_locals
+          (indent indentation instr) p.main
+        )) nl
         nl
         nl
         (seplist nl clas) (StringMap.to_association_list p.defs)

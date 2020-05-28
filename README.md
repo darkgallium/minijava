@@ -18,5 +18,6 @@ The main repo of the project is : https://github.com/lascar-pacagi/MiniJava.
 
 - [x] ++ operator (for variables currently)
 - [x] `if` with no else block
+- [x] add possibility to declare locals in the main function
 - [ ] primitive string support
 - [ ] homemade transpiler

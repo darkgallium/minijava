@@ -94,7 +94,7 @@ let rec instr2c () = function
       instr2c e3
       instr2c i
 | IBlock is -> sprintf "{%a%t}" (seplist nl instr2c) is nl
-| ISyso e -> sprintf "printf(%a);printf(\"\\n\");" expr2c e
+| ISyso e -> sprintf "printf(\"%%d\", %a);printf(\"\\n\");" expr2c e
 | IIncrement i -> sprintf "%s++;" i
 
 let locals2c () (name, typ) =
@@ -150,6 +150,8 @@ let program2c (p : MJ.program) : unit =
 %s
 int main(int argc, char *argv[]) {
 %s
+%s
 }\n"
 (seplist nl classdef2c () (StringMap.to_association_list p.defs))
+(termlist nl locals2c () p.main_locals)
 (instr2c () p.main)
