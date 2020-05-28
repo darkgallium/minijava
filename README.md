@@ -1,7 +1,9 @@
 # MiniJava
 
 A little transpiler of a subset of java to C.
+
 This is a project made as part of the Compiler class at INSA Rennes.
+
 The main repo of the project is : https://github.com/lascar-pacagi/MiniJava.
 
 ## Main objectives

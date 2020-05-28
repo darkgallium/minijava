@@ -12,7 +12,10 @@ let classattr2c () (name, typ) =
   sprintf "%s %s" (typ2c () typ) name
 
 let classdef2c () (name, c) =
-  sprintf "struct %s {%s};" name ((termlist semicolon classattr2c) () (StringMap.to_association_list c.attributes))
+  sprintf "struct %s {%s};%s"
+    name
+    ((termlist semicolon classattr2c) () (StringMap.to_association_list c.attributes))
+    (seplist nl method2c name (StringMap.to_association_list c.methods))
 
 let constant2c () = function
     | ConstBool true -> sprintf "0"
@@ -31,13 +34,14 @@ let rec expr0 () = function
   | EConst c -> sprintf "%a" constant2c c
   | EGetVar x -> sprintf "%s" x
   | EThis -> "###"
-  | EMethodCall (o, c, es) -> sprintf "%a.%s(%a)" expr0 o c (seplist comma expr2c) es
+  | EMethodCall (o, c, es) -> sprintf "%a->%s(%a)" expr0 o c (seplist comma expr2c) es
   | EArrayGet (ea, ei) -> sprintf "%a[%a]" expr0 ea expr2c ei
   | EArrayLength e -> "###"
-  | EObjectAlloc id -> "###"
+  | EObjectAlloc id -> sprintf "(struct %s*)malloc(sizeof(struct %s))" id id
   | e -> sprintf "(%a)" expr2c e
 
 and expr1 () = function
+  (* trick borrowed from minijava's transpiler : store the array in a struct alongside with length*)
   | EArrayAlloc e -> "###"
   | e -> expr0 () e
 
@@ -89,6 +93,14 @@ let rec instr2c () = function
 | IBlock is -> sprintf "{%a%t}" (seplist nl instr2c) is nl
 | ISyso e -> sprintf "printf(%a);printf(\"\\n\");" expr2c e
 | IIncrement i -> sprintf "%s++;" i
+
+let method2c class_name (name, m) =
+  sprintf "%s %s_%s(struct %s* this) {%s}"
+    (typ2c () m.result)
+    class_name
+    name
+    class_name
+    (instr2c m.body)
 
 let program2c (p : MJ.program) : unit =
   Printf.fprintf stdout "#include <stdio.h>\n\
