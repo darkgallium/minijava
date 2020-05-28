@@ -2,24 +2,22 @@ open MJ
 open Printf
 open Print
 
+(*
+  Custom transpiler minijava -> C
+
+  Limitations :
+  - No indentation
+*)
+
 let typ2c () = function
-    | TypInt -> sprintf "int"
-    | TypBool -> sprintf "int"
-    | Typ id -> sprintf "struct %s" id
-    | _ -> sprintf "###"
-
-let classattr2c () (name, typ) =
-  sprintf "%s %s" (typ2c () typ) name
-
-let classdef2c () (name, c) =
-  sprintf "struct %s {%s};%s"
-    name
-    ((termlist semicolon classattr2c) () (StringMap.to_association_list c.attributes))
-    (seplist nl method2c name (StringMap.to_association_list c.methods))
+    | TypInt -> "int"
+    | TypBool -> "int"
+    | Typ id -> sprintf "struct %s*" id
+    | TypIntArray -> "int*"
 
 let constant2c () = function
-    | ConstBool true -> sprintf "0"
-    | ConstBool false -> sprintf "1"
+    | ConstBool true -> "0"
+    | ConstBool false -> "1"
     | ConstInt i -> sprintf "%ld" i
 
 let binop2c = function
@@ -33,16 +31,16 @@ let binop2c = function
 let rec expr0 () = function
   | EConst c -> sprintf "%a" constant2c c
   | EGetVar x -> sprintf "%s" x
-  | EThis -> "###"
+  | EThis -> "this"
   | EMethodCall (o, c, es) -> sprintf "%a->%s(%a)" expr0 o c (seplist comma expr2c) es
   | EArrayGet (ea, ei) -> sprintf "%a[%a]" expr0 ea expr2c ei
-  | EArrayLength e -> "###"
+  | EArrayLength e -> sprintf "(sizeof( (%a) )/sizeof(int))" expr0 e
   | EObjectAlloc id -> sprintf "(struct %s*)malloc(sizeof(struct %s))" id id
   | e -> sprintf "(%a)" expr2c e
 
 and expr1 () = function
-  (* trick borrowed from minijava's transpiler : store the array in a struct alongside with length*)
-  | EArrayAlloc e -> "###"
+  (* TODO: trick borrowed from Pascal's transpiler : store the array in a struct alongside with length *)
+  | EArrayAlloc e -> sprintf "malloc(sizeof(int)*(%a))" expr0 e
   | e -> expr0 () e
 
 and expr2 () = function
@@ -94,13 +92,31 @@ let rec instr2c () = function
 | ISyso e -> sprintf "printf(%a);printf(\"\\n\");" expr2c e
 | IIncrement i -> sprintf "%s++;" i
 
-let method2c class_name (name, m) =
-  sprintf "%s %s_%s(struct %s* this) {%s}"
+let locals2c () (name, typ) =
+  sprintf "%s %s;" (typ2c () typ) name
+
+let formals2c () (name, typ) =
+  sprintf "%s %s" (typ2c () typ) name
+
+let method2c cn () (name, m) =
+  sprintf "%s %s_%s(struct %s* this%s){\n%s%s\nreturn %s;\n}\n"
     (typ2c () m.result)
-    class_name
+    cn
     name
-    class_name
-    (instr2c m.body)
+    cn
+    ((preclist comma formals2c) () m.formals)
+    ((termlist nl locals2c) () (StringMap.to_association_list m.locals))
+    (instr2c () m.body)
+    (expr2c () m.return)
+
+let classattr2c () (name, typ) =
+  sprintf "%s %s" (typ2c () typ) name
+
+let classdef2c () (name, c) =
+  sprintf "struct %s {\n%s};\n%s"
+    name
+    ((termlist semicolon classattr2c) () (StringMap.to_association_list c.attributes))
+    ((termlist nl (method2c name)) () (StringMap.to_association_list c.methods))
 
 let program2c (p : MJ.program) : unit =
   Printf.fprintf stdout "#include <stdio.h>\n\
