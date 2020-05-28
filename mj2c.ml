@@ -6,6 +6,7 @@ open Print
   Custom transpiler minijava -> C
 
   Limitations :
+  - Does not work well with allocation + method call inline
   - No indentation
 *)
 
@@ -32,10 +33,14 @@ let rec expr0 () = function
   | EConst c -> sprintf "%a" constant2c c
   | EGetVar x -> sprintf "%s" x
   | EThis -> "this"
-  | EMethodCall (o, c, es) -> sprintf "%a->%s(%a)" expr0 o c (seplist comma expr2c) es
+  | EMethodCall (o, c, es) -> sprintf "%a->%s(%a%a)" expr0 o c expr0 o (preclist comma expr2c) es
   | EArrayGet (ea, ei) -> sprintf "%a[%a]" expr0 ea expr2c ei
   | EArrayLength e -> sprintf "(sizeof( (%a) )/sizeof(int))" expr0 e
-  | EObjectAlloc id -> sprintf "(struct %s*)malloc(sizeof(struct %s))" id id
+  | EObjectAlloc id -> sprintf "({
+    struct %s* obj = malloc(sizeof(struct %s));\
+    obj->vtable = %s_vtable;\
+    (struct %s*) obj;\
+    })" id id id id
   | e -> sprintf "(%a)" expr2c e
 
 and expr1 () = function
@@ -110,17 +115,38 @@ let method2c cn () (name, m) =
     (expr2c () m.return)
 
 let classattr2c () (name, typ) =
-  sprintf "%s %s" (typ2c () typ) name
+  sprintf "%s %s;" (typ2c () typ) name
+
+(* vtable stuff based of https://gist.github.com/michahoiting/1aec1c95881881add9a20e9839c35cec*)
+
+let allocVtable cn methods =
+  let enumFields cn () (name, _) =
+    sprintf "Call_%s_%s" cn name
+  in
+  let vtableFields cn () (name, _) =
+    sprintf "%s_%s" cn name
+  in
+  if not (StringMap.is_empty methods) then
+  begin
+    sprintf "enum {%s};\nvoid (*%s_vtable[])() = {%s};\n"
+    ((seplist comma (enumFields cn)) () (StringMap.to_association_list methods))
+    cn
+    ((seplist comma (vtableFields cn)) () (StringMap.to_association_list methods))
+  end
+  else sprintf "void (*%s_vtable[])() = {};" cn
 
 let classdef2c () (name, c) =
-  sprintf "struct %s {\n%s};\n%s"
+  sprintf "struct %s {\nvoid (**vtable)();\n%s};\n%s\n%s\n"
     name
     ((termlist semicolon classattr2c) () (StringMap.to_association_list c.attributes))
     ((termlist nl (method2c name)) () (StringMap.to_association_list c.methods))
+    (allocVtable name c.methods)
 
 let program2c (p : MJ.program) : unit =
   Printf.fprintf stdout "#include <stdio.h>\n\
 #include <stdlib.h>\n\
+#pragma GCC diagnostic ignored \"-Wpointer-to-int-cast\"\n\
+#pragma GCC diagnostic ignored \"-Wint-to-pointer-cast\"\n\
 %s
 int main(int argc, char *argv[]) {
 %s
