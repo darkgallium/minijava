@@ -6,7 +6,15 @@ open Print
   Custom transpiler minijava -> C
 
   Limitations :
-  - Does not work well with allocation + method call inline
+  - Cannot name two methods with same name in two different classes (TODO: need to add class name to enum)
+  - Allocation + method call inline doesnt work (because we need to pass the this pointer to all methods, thus the pointer must exist before call) :
+    You need to do :
+      A obj;
+      obj = new A();
+      System.out.println(obj.a());
+    Instead of :
+      System.out.println(new A().a());
+
   - No indentation
 *)
 
@@ -33,7 +41,7 @@ let rec expr0 () = function
   | EConst c -> sprintf "%a" constant2c c
   | EGetVar x -> sprintf "%s" x
   | EThis -> "this"
-  | EMethodCall (o, c, es) -> sprintf "%a->%s(%a%a)" expr0 o c expr0 o (preclist comma expr2c) es
+  | EMethodCall (o, c, es) -> sprintf "%a->vtable[Call_%s](%a%a)" expr0 o c expr0 o (preclist comma expr2c) es
   | EArrayGet (ea, ei) -> sprintf "%a[%a]" expr0 ea expr2c ei
   | EArrayLength e -> sprintf "(sizeof( (%a) )/sizeof(int))" expr0 e
   | EObjectAlloc id -> sprintf "({
@@ -44,7 +52,7 @@ let rec expr0 () = function
   | e -> sprintf "(%a)" expr2c e
 
 and expr1 () = function
-  (* TODO: trick borrowed from Pascal's transpiler : store the array in a struct alongside with length *)
+  (* TODO: trick borrowed from another transpiler : store the array in a struct alongside with length *)
   | EArrayAlloc e -> sprintf "malloc(sizeof(int)*(%a))" expr0 e
   | e -> expr0 () e
 
@@ -121,22 +129,22 @@ let classattr2c () (name, typ) =
 
 let allocVtable cn methods =
   let enumFields cn () (name, _) =
-    sprintf "Call_%s_%s" cn name
+    sprintf "Call_%s" name
   in
   let vtableFields cn () (name, _) =
     sprintf "%s_%s" cn name
   in
   if not (StringMap.is_empty methods) then
   begin
-    sprintf "enum {%s};\nvoid (*%s_vtable[])() = {%s};\n"
+    sprintf "enum {%s};\nint (*%s_vtable[])() = {%s};\n"
     ((seplist comma (enumFields cn)) () (StringMap.to_association_list methods))
     cn
     ((seplist comma (vtableFields cn)) () (StringMap.to_association_list methods))
   end
-  else sprintf "void (*%s_vtable[])() = {};" cn
+  else sprintf "int (*%s_vtable[])() = {};" cn
 
 let classdef2c () (name, c) =
-  sprintf "struct %s {\nvoid (**vtable)();\n%s};\n%s\n%s\n"
+  sprintf "struct %s {\nint (**vtable)();\n%s};\n%s\n%s\n"
     name
     ((termlist semicolon classattr2c) () (StringMap.to_association_list c.attributes))
     ((termlist nl (method2c name)) () (StringMap.to_association_list c.methods))

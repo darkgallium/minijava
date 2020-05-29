@@ -7,8 +7,8 @@
 
 %token <int32> INT_CONST
 %token <bool> BOOL_CONST
-%token INTEGER BOOLEAN
 %token <string Location.t> IDENT
+%token INTEGER BOOLEAN
 %token CLASS PUBLIC STATIC VOID MAIN STRING EXTENDS RETURN
 %token PLUS MINUS TIMES NOT LT AND
 %token COMMA SEMICOLON
@@ -128,7 +128,7 @@ raw_expression:
 | THIS
    { EThis }
 | id1 = IDENT
-   { EGetVar id1 }
+   { EGetVar(id1) }
 | NEW INTEGER LBRACKET e = expression RBRACKET
    { EArrayAlloc(e)}
 | NEW id = IDENT LPAREN RPAREN
