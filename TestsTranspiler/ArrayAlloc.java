@@ -1,6 +1,8 @@
 class Dumb {
     public static void main(String[] args) {
-      System.out.println(new A());
+      A obj;
+      obj = new A();
+      System.out.println(obj.B());
     }
 }
 class A {

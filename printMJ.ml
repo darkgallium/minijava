@@ -18,6 +18,7 @@ let binop = function
 let rec expr0 () = function
   | EConst c -> sprintf "%a" constant c
   | EGetVar x -> sprintf "%s" x
+  | EGetMember (e, x) -> sprintf "%s.%s" (expr () e) x
   | EThis -> "this"
   | EMethodCall (o, c, es) -> sprintf "%a.%s(%a)" expr0 o c (seplist comma expr) es
   | EArrayGet (ea, ei) -> sprintf "%a[%a]" expr0 ea expr ei
@@ -61,6 +62,8 @@ let rec for_instr () = function
 
 let rec instr () = function
   | ISetVar (x, e) -> sprintf "%s = %a;" x expr e
+  | IThisSetVar (x, e) -> sprintf "this.%s = %a;" x expr e
+  | IThisArraySet (id, ei, ev) -> sprintf "this.%s[%a] = %a;" id expr ei expr ev
   | IArraySet (id, ei, ev) -> sprintf "%s[%a] = %a;" id expr ei expr ev
   | IIf (c, i1, i2) ->
       sprintf "if (%a) %a%telse %a"

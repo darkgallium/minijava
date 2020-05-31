@@ -149,6 +149,8 @@ raw_expression:
    { EBinOp(OpMul, e1, e2) }
 | e1 = expression LBRACKET e2 = expression RBRACKET
    { EArrayGet(e1, e2) }
+| e = expression DOT id1 = IDENT
+  { EGetMember(e, id1) }
 | e = expression DOT LENGTH
    { EArrayLength(e) }
 | e = expression DOT id = IDENT LPAREN sl = separated_list(COMMA, expression) RPAREN
@@ -176,8 +178,12 @@ instruction:
    { IWhile (e, i) }
 | FOR LPAREN e1 = for_instruction SEMICOLON e2 = expression SEMICOLON e3 = for_instruction RPAREN i = instruction
   { IFor (e1, e2, e3, i) }
+| THIS DOT id = IDENT LBRACKET e1 = expression RBRACKET ASSIGN e2 = expression SEMICOLON
+  { IThisArraySet (id, e1, e2) }
 | id = IDENT LBRACKET e1 = expression RBRACKET ASSIGN e2 = expression SEMICOLON
    { IArraySet (id, e1, e2) }
+| THIS DOT id = IDENT ASSIGN e = expression SEMICOLON
+ { IThisSetVar (id, e) }
 | id = IDENT ASSIGN e = expression SEMICOLON
    { ISetVar (id, e) }
 | id = IDENT PLUS PLUS SEMICOLON

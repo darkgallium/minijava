@@ -5,6 +5,7 @@ type expression = raw_expression Location.t
 and raw_expression =
 | EConst of constant
 | EGetVar of identifier
+| EGetMember of expression * identifier
 | EUnOp of unop * expression
 | EBinOp of binop * expression * expression
 | EMethodCall of expression * identifier * expression list
@@ -36,6 +37,8 @@ and instruction =
 | IFor of instruction * expression * instruction * instruction
 | ISyso of expression
 | ISetVar of identifier * expression
+| IThisSetVar of identifier * expression
+| IThisArraySet of identifier * expression * expression
 | IArraySet of identifier * expression * expression
 | IIncrement of identifier
 

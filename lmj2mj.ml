@@ -2,6 +2,7 @@ let rec translate_expression e = translate_raw_expression (Location.content e)
 
 and translate_raw_expression = function
 | LMJ.EConst c -> MJ.EConst c
+| LMJ.EGetMember (e, id) -> MJ.EGetMember (translate_expression e, Location.content id)
 | LMJ.EGetVar id -> MJ.EGetVar (Location.content id)
 | LMJ.EUnOp (op, e) -> MJ.EUnOp (op, translate_expression e)
 | LMJ.EBinOp (op, e1, e2) -> MJ.EBinOp (op, translate_expression e1, translate_expression e2)
@@ -20,6 +21,8 @@ and translate_instruction = function
 | LMJ.IFor (e1, e2, e3, i) -> MJ.IFor (translate_instruction e1, translate_expression e2, translate_instruction e3, translate_instruction i)
 | LMJ.ISyso e -> MJ.ISyso (translate_expression e)
 | LMJ.ISetVar (id, e) -> MJ.ISetVar (Location.content id, translate_expression e)
+| LMJ.IThisSetVar (id, e) -> MJ.IThisSetVar (Location.content id, translate_expression e)
+| LMJ.IThisArraySet (a, e1, e2) -> MJ.IThisArraySet (Location.content a, translate_expression e1, translate_expression e2)
 | LMJ.IArraySet (a, e1, e2) -> MJ.IArraySet (Location.content a, translate_expression e1, translate_expression e2)
 | LMJ.IIncrement e -> MJ.IIncrement (Location.content e)
 
